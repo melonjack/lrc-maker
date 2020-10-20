@@ -57,7 +57,7 @@ watch_esm:
 
 $(target_es6): $(metadata) $(src_ts) $(package_json)
 	$(tsc) -b tsconfig.es6.json
-	$(webpack) -p
+	$(webpack)
 
 nomodule: $(target_es6)
 
