@@ -41,21 +41,26 @@ swWorker.addEventListener("fetch", (event) => {
     }
 
     event.respondWith(
-        caches.match(event.request).then(
-            (match) =>
-                match ||
-                caches.open(CACHENAME).then((cache) =>
-                    fetch(event.request).then((response) => {
-                        console.log("fetch", event.request.url, response.status);
+        caches.match(event.request).then((match) => {
+            if (match) {
+                console.log(match);
+                if (match.url.indexOf("string.esnext.js") > 0) {
+                    console.log(JSON.stringify(match));
+                }
+                return match;
+            }
+            return caches.open(CACHENAME).then((cache) =>
+                fetch(event.request).then((response) => {
+                    console.log("fetch", event.request.url, response.status);
 
-                        if (response.status !== 200) {
-                            return response;
-                        }
-
-                        cache.put(event.request, response.clone());
+                    if (response.status !== 200) {
                         return response;
-                    }),
-                ),
-        ),
+                    }
+
+                    cache.put(event.request, response.clone());
+                    return response;
+                }),
+            );
+        }),
     );
 });
