@@ -33,10 +33,10 @@ swWorker.addEventListener("fetch", (event) => {
 
     const url = new URL(event.request.url);
 
-    console.log(url.toString());
+    console.log(event.request.url);
 
     if (!/(?:\.css|\.js|\.svg)$/i.test(url.pathname) && url.origin !== swWorker.location.origin) {
-        console.log("filter out", url.toString());
+        console.log("filter out", event.request.url);
         return;
     }
 
@@ -49,18 +49,25 @@ swWorker.addEventListener("fetch", (event) => {
                 }
                 return match;
             }
-            return caches.open(CACHENAME).then((cache) =>
-                fetch(event.request).then((response) => {
-                    console.log("fetch", event.request.url, response.status);
+            console.log("not match", event.request.url);
+            return caches.open(CACHENAME).then((cache) => {
+                console.log("fetch start", event.request.url);
+                return fetch(event.request)
+                    .then((response) => {
+                        console.log("fetched", event.request.url, response.status);
 
-                    if (response.status !== 200) {
+                        if (response.status !== 200) {
+                            return response;
+                        }
+
+                        cache.put(event.request, response.clone());
                         return response;
-                    }
-
-                    cache.put(event.request, response.clone());
-                    return response;
-                }),
-            );
+                    })
+                    .catch((reason) => {
+                        console.log("fetch error", event.request.url, reason);
+                        throw reason;
+                    });
+            });
         }),
     );
 });
