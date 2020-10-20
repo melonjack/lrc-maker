@@ -33,12 +33,10 @@ swWorker.addEventListener("fetch", (event) => {
 
     const url = new URL(event.request.url);
 
-    console.group("sw url");
     console.log(url.toString());
 
     if (!/(?:\.css|\.js|\.svg)$/i.test(url.pathname) && url.origin !== swWorker.location.origin) {
-        console.log("return");
-        console.groupEnd();
+        console.log("filter out", url.toString());
         return;
     }
 
@@ -48,8 +46,8 @@ swWorker.addEventListener("fetch", (event) => {
                 match ||
                 caches.open(CACHENAME).then((cache) =>
                     fetch(event.request).then((response) => {
-                        console.log("fetch", response.status);
-                        console.groupEnd();
+                        console.log("fetch", event.request.url, response.status);
+
                         if (response.status !== 200) {
                             return response;
                         }
