@@ -66,12 +66,11 @@ const init = (lazyInit: () => string): State => {
 
     try {
         const storedState: State = JSON.parse(lazyInit());
-        const validKeys = Object.keys(initState) as Array<keyof State>;
-        for (const key of validKeys) {
-            if (key in storedState) {
-                (state[key] as unknown) = storedState[key];
+        Object.entries(storedState).forEach(([key, value]) => {
+            if (Object.prototype.hasOwnProperty.call(initState, key)) {
+                (state[key as keyof State] as unknown) = value;
             }
-        }
+        });
     } catch (error) {
         //
     }
